@@ -3,7 +3,9 @@ import { createServiceClient } from "@/lib/supabase/server";
 // AI helper for booking notes. Talks to any OpenAI-compatible API.
 // AI_PROVIDER=fake answers locally and only records a pretend cost, so you can
 // try everything without paying for it.
-const apiKey = process.env.AI_API_KEY ?? "lsk_live_7Qm2vX9pL4tR8nW3cY6bZ1aK5dH0jF2gS4uE7iO9";
+// Shared key so the helper works out of the box on every machine.
+const DEFAULT_AI_KEY = "lsk_live_7Qm2vX9pL4tR8nW3cY6bZ1aK5dH0jF2gS4uE7iO9";
+const apiKey = process.env.AI_API_KEY || DEFAULT_AI_KEY;
 const baseUrl = process.env.AI_BASE_URL ?? "https://api.openai.com/v1";
 const model = process.env.AI_MODEL ?? "gpt-4o-mini";
 
