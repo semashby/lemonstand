@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+body {
+  font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+input, textarea, select {
+  @apply w-full rounded-xl border-2 border-stone-900 bg-white px-3 py-2;
+}
+
+label {
+  @apply block text-sm font-semibold;
+}
