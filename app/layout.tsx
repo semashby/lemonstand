@@ -21,6 +21,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">{children}</main>
         <footer className="border-t border-stone-300 py-6 text-center text-sm text-stone-500">
           Lemonstand, Nijmegen · a practice app for Ship It Safe by Zexy Studios
+          {" · "}<a href="/privacy" className="underline">Privacy</a>
         </footer>
       </body>
     </html>

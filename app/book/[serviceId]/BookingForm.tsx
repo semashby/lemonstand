@@ -15,6 +15,7 @@ export function BookingForm({ serviceId, slots, defaults, signedIn }: Props) {
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
   const [helping, setHelping] = useState(false);
   const [helperError, setHelperError] = useState("");
+  const [bookingError, setBookingError] = useState("");
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -37,13 +38,19 @@ export function BookingForm({ serviceId, slots, defaults, signedIn }: Props) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("sending");
+    setBookingError("");
     const res = await fetch("/api/bookings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ serviceId, ...form }),
     });
     const data = await res.json();
-    if (data.ok) setStatus("done");
+    if (data.ok) {
+      setStatus("done");
+    } else {
+      setStatus("idle");
+      setBookingError(data.error ?? "We couldn't save your booking. Please try again.");
+    }
   }
 
   if (status === "done") {
@@ -85,6 +92,7 @@ export function BookingForm({ serviceId, slots, defaults, signedIn }: Props) {
         )}
         {helperError && <p className="mt-1 text-sm text-stone-600">{helperError}</p>}
       </div>
+      {bookingError && <p className="font-semibold text-red-700">{bookingError}</p>}
       <button disabled={status === "sending"} className="rounded-full bg-stone-900 px-5 py-3 font-semibold text-yellow-300">
         {status === "sending" ? "Booking…" : "Book this time"}
       </button>
