@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { euros, upcomingSlots } from "@/lib/slots";
 import { BookingForm } from "./BookingForm";
 
@@ -21,7 +21,9 @@ async function Book({ params }: { params: PageProps<"/book/[serviceId]">["params
   const { data: service } = await supabase.from("services").select("*").eq("id", serviceId).maybeSingle();
   if (!service) notFound();
 
-  const { data: taken } = await supabase.from("bookings").select("starts_at").eq("service_id", serviceId);
+  // Customers can only read their own bookings, so the taken times come from
+  // the server's client. Only the times leave this function.
+  const { data: taken } = await createServiceClient().from("bookings").select("starts_at").eq("service_id", serviceId);
   const takenTimes = new Set((taken ?? []).map((b) => new Date(b.starts_at).getTime()));
   const slots = upcomingSlots()
     .filter((s) => !takenTimes.has(s.getTime()))
