@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 
-type Props = { bookingId: string; serviceName?: string; amount: number };
+type Props = { bookingId: string };
 
-export function PayButton({ bookingId, serviceName, amount }: Props) {
+export function PayButton({ bookingId }: Props) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -13,7 +13,7 @@ export function PayButton({ bookingId, serviceName, amount }: Props) {
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ bookingId, serviceName, amount }),
+      body: JSON.stringify({ bookingId }),
     });
     const data = await res.json();
     if (data.url) window.location.href = data.url;
