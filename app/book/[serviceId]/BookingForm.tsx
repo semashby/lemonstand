@@ -7,12 +7,14 @@ type Props = {
   serviceId: string;
   slots: string[];
   defaults: { name: string; email: string; phone: string };
+  signedIn: boolean;
 };
 
-export function BookingForm({ serviceId, slots, defaults }: Props) {
+export function BookingForm({ serviceId, slots, defaults, signedIn }: Props) {
   const [form, setForm] = useState({ ...defaults, startsAt: slots[0] ?? "", note: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
   const [helping, setHelping] = useState(false);
+  const [helperError, setHelperError] = useState("");
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -20,13 +22,15 @@ export function BookingForm({ serviceId, slots, defaults }: Props) {
 
   async function helpMeWrite() {
     setHelping(true);
+    setHelperError("");
     const res = await fetch("/api/ai/note", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: form.note || "a booking at Lemonstand", maxTokens: 4000 }),
+      body: JSON.stringify({ prompt: form.note || "a booking at Lemonstand" }),
     });
-    const { note } = await res.json();
-    set("note", note);
+    const data = await res.json();
+    if (res.ok) set("note", data.note);
+    else setHelperError(data.error ?? "The note helper is resting. You can write your own.");
     setHelping(false);
   }
 
@@ -74,9 +78,12 @@ export function BookingForm({ serviceId, slots, defaults }: Props) {
       <div>
         <label htmlFor="note">Note for the stand</label>
         <textarea id="note" rows={3} value={form.note} onChange={(e) => set("note", e.target.value)} />
-        <button type="button" onClick={helpMeWrite} disabled={helping} className="mt-2 text-sm font-semibold underline">
-          {helping ? "Writing…" : "✨ Help me write it"}
-        </button>
+        {signedIn && (
+          <button type="button" onClick={helpMeWrite} disabled={helping} className="mt-2 text-sm font-semibold underline">
+            {helping ? "Writing…" : "✨ Help me write it"}
+          </button>
+        )}
+        {helperError && <p className="mt-1 text-sm text-stone-600">{helperError}</p>}
       </div>
       <button disabled={status === "sending"} className="rounded-full bg-stone-900 px-5 py-3 font-semibold text-yellow-300">
         {status === "sending" ? "Booking…" : "Book this time"}

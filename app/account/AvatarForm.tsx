@@ -7,6 +7,7 @@ type Props = { userId: string; avatarUrl: string | null; onUploaded: (url: strin
 
 export function AvatarForm({ userId, avatarUrl, onUploaded }: Props) {
   const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState("");
 
   async function upload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -14,12 +15,17 @@ export function AvatarForm({ userId, avatarUrl, onUploaded }: Props) {
     setBusy(true);
     const supabase = createClient();
     const path = `${userId}/${file.name}`;
-    await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+    setBusy(false);
+    if (error) {
+      setProblem("That didn't work. Use a PNG, JPEG or WebP under 2 MB.");
+      return;
+    }
+    setProblem("");
     // Serve it from our own domain, see app/u/[...path]/route.ts
     const url = `/u/${path}`;
     await supabase.from("profiles").update({ avatar_url: url }).eq("id", userId);
     onUploaded(url);
-    setBusy(false);
   }
 
   return (
@@ -32,7 +38,8 @@ export function AvatarForm({ userId, avatarUrl, onUploaded }: Props) {
       )}
       <div>
         <label htmlFor="avatar">Profile picture</label>
-        <input id="avatar" type="file" onChange={upload} disabled={busy} className="mt-1 text-sm" />
+        <input id="avatar" type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} disabled={busy} className="mt-1 text-sm" />
+        {problem && <p className="mt-1 text-sm text-stone-600">{problem}</p>}
       </div>
     </div>
   );

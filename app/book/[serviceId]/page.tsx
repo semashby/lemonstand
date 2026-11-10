@@ -42,6 +42,7 @@ async function Book({ params }: { params: PageProps<"/book/[serviceId]">["params
         serviceId={service.id}
         slots={slots}
         defaults={{ name: profile?.full_name ?? "", email: user?.email ?? "", phone: profile?.phone ?? "" }}
+        signedIn={!!user}
       />
     </>
   );
