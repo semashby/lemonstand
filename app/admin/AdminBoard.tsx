@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { createAdminClient } from "@/lib/supabase/admin-client";
 import { euros, when } from "@/lib/slots";
 
 type Row = {
@@ -22,11 +21,11 @@ export function AdminBoard() {
   const [message, setMessage] = useState("");
 
   const load = useCallback(async () => {
-    const db = createAdminClient();
-    const { data } = await db.from("bookings").select("*, services(name)").order("starts_at");
-    setRows((data as Row[]) ?? []);
-    const { data: usage } = await db.from("ai_usage").select("cost_cents");
-    setAiBill((usage ?? []).reduce((sum, u) => sum + Number(u.cost_cents), 0));
+    const res = await fetch("/api/admin/bookings");
+    if (!res.ok) return;
+    const data = await res.json();
+    setRows(data.rows);
+    setAiBill(data.aiBill);
   }, []);
 
   useEffect(() => {
@@ -34,30 +33,19 @@ export function AdminBoard() {
   }, [load]);
 
   async function markDone(id: string) {
-    await createAdminClient().from("bookings").update({ status: "done" }).eq("id", id);
+    await fetch(`/api/admin/bookings/${id}/done`, { method: "POST" });
     load();
   }
 
-  // Refund straight from the dashboard, so the owner doesn't have to open Stripe.
+  // Refund from the dashboard; the server route holds the Stripe key.
   async function refund(row: Row) {
-    const session = await fetch(`https://api.stripe.com/v1/checkout/sessions/${row.stripe_session_id}`, {
-      headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY}` },
-    }).then((r) => r.json());
-    const res = await fetch("https://api.stripe.com/v1/refunds", {
+    const res = await fetch("/api/admin/refund", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({ payment_intent: session.payment_intent }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bookingId: row.id }),
     });
-    if (res.ok) {
-      await createAdminClient().from("bookings").update({ status: "cancelled" }).eq("id", row.id);
-      setMessage(`Refunded ${row.customer_name}.`);
-      load();
-    } else {
-      setMessage("Refund failed, check Stripe.");
-    }
+    setMessage(res.ok ? `Refunded ${row.customer_name}.` : "Refund failed, check Stripe.");
+    load();
   }
 
   return (

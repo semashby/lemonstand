@@ -3,9 +3,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 // AI helper for booking notes. Talks to any OpenAI-compatible API.
 // AI_PROVIDER=fake answers locally and only records a pretend cost, so you can
 // try everything without paying for it.
-// Shared key so the helper works out of the box on every machine.
-const DEFAULT_AI_KEY = "lsk_live_7Qm2vX9pL4tR8nW3cY6bZ1aK5dH0jF2gS4uE7iO9";
-const apiKey = process.env.AI_API_KEY || DEFAULT_AI_KEY;
+const apiKey = process.env.AI_API_KEY;
 const baseUrl = process.env.AI_BASE_URL ?? "https://api.openai.com/v1";
 const model = process.env.AI_MODEL ?? "gpt-4o-mini";
 
@@ -21,6 +19,8 @@ export async function writeNote(prompt: string, maxTokens: number, userId: strin
     // The fake provider bills as if it used the whole budget it was given.
     tokens = maxTokens + Math.ceil(prompt.length / 4);
   } else {
+    // No key, no AI: fail here rather than fall back to one in the code.
+    if (!apiKey) throw new Error("AI_API_KEY is not set");
     const res = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
