@@ -42,7 +42,7 @@ async function MyBookings() {
             <p className="text-sm text-stone-600">{when(b.starts_at)} · {euros(b.amount_cents)} · {b.status}</p>
           </div>
           {b.status === "pending" && (
-            <PayButton bookingId={b.id} serviceName={b.services?.name} amount={b.amount_cents} />
+            <PayButton bookingId={b.id} />
           )}
         </li>
       ))}
