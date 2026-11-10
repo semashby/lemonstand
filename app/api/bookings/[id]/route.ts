@@ -10,10 +10,13 @@ export async function GET(_request: NextRequest, ctx: RouteContext<"/api/booking
     return NextResponse.json({ error: "Please sign in" }, { status: 401 });
   }
 
+  // Only the customer's own booking. Someone else's id gets the same
+  // "not found" as an id that doesn't exist.
   const { data: booking, error } = await supabase
     .from("bookings")
     .select("*, services(name, minutes)")
     .eq("id", id)
+    .eq("user_id", user.id)
     .single();
 
   if (error || !booking) {

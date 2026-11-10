@@ -37,7 +37,7 @@ export default function SignupPage() {
       </div>
       <div>
         <label htmlFor="password">Password</label>
-        <input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+        <input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
       {error && <p className="text-sm text-red-700">{error}</p>}
       <button className="rounded-full bg-stone-900 px-5 py-3 font-semibold text-yellow-300">Sign up</button>

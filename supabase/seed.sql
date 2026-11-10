@@ -20,7 +20,7 @@ insert into auth.users (
    '{"provider":"email","providers":["email"]}', '{"full_name":"Bram de Wit"}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000', 'c0c0c0c0-0000-4000-8000-00000000000c', 'authenticated', 'authenticated',
    'owner@lemonstand.test', crypt('lemonade123', gen_salt('bf')), now(),
-   '{"provider":"email","providers":["email"]}', '{"full_name":"Lotte Citroen","role":"admin"}', now(), now(), '', '', '', '');
+   '{"provider":"email","providers":["email"],"role":"admin"}', '{"full_name":"Lotte Citroen"}', now(), now(), '', '', '', '');
 
 insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
 select gen_random_uuid(), id, id::text,
