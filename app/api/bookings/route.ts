@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { log } from "@/lib/log";
 
 export async function POST(request: Request) {
@@ -18,7 +18,9 @@ export async function POST(request: Request) {
       .single();
     if (serviceError) throw serviceError;
 
-    const { data: booking, error } = await supabase
+    // Nobody writes bookings from the browser. The server does, with the user id
+    // from the session and the price from the services table.
+    const { data: booking, error } = await createServiceClient()
       .from("bookings")
       .insert({
         user_id: user?.id ?? null,
