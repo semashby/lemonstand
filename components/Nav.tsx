@@ -30,7 +30,7 @@ export function Nav() {
         <>
           <Link href="/bookings">My bookings</Link>
           <Link href="/account">Account</Link>
-          {user.user_metadata?.role === "admin" && <Link href="/admin">Dashboard</Link>}
+          {user.app_metadata?.role === "admin" && <Link href="/admin">Dashboard</Link>}
           <button onClick={signOut} className="rounded-full border-2 border-stone-900 px-3 py-1">Sign out</button>
         </>
       ) : (
