@@ -86,9 +86,12 @@ export async function writeNote(rawPrompt: string, userId: string) {
   return text;
 }
 
+// This month's bill, added up by the database. A sum in JavaScript would stop
+// growing at 1,000 rows, the most a select returns.
 export async function aiBillCents() {
-  const { data } = await createServiceClient().from("ai_usage").select("cost_cents");
-  return (data ?? []).reduce((sum, row) => sum + Number(row.cost_cents), 0);
+  const { data, error } = await createServiceClient().rpc("ai_bill_this_month");
+  if (error) throw error;
+  return Number(data);
 }
 
 function fakeNote(prompt: string) {

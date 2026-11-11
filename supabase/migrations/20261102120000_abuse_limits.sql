@@ -1,4 +1,4 @@
--- Module 6: limits on uploads, and today's AI spend added up by the database.
+-- Module 6: limits on uploads, and the AI spend added up by the database.
 
 -- Images only, 2 MB. Stops mistakes and honest uploads. It can't stop a liar:
 -- the type is whatever the uploader claims, so app/u/[...path]/route.ts decides
@@ -35,3 +35,17 @@ as $$
 $$;
 
 revoke execute on function public.ai_spend_today() from public, anon, authenticated;
+
+-- The same for the owner dashboard: this month's AI bill.
+create function public.ai_bill_this_month()
+  returns numeric
+  language sql
+  stable
+  set search_path = ''
+as $$
+  select coalesce(sum(cost_cents), 0)
+  from public.ai_usage
+  where created_at >= date_trunc('month', now());
+$$;
+
+revoke execute on function public.ai_bill_this_month() from public, anon, authenticated;

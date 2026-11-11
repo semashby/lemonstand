@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin-client";
 import { currentOwner } from "@/lib/owner";
+import { aiBillCents } from "@/lib/ai";
 
 // Every booking and this month's AI bill, for the owner dashboard.
 export async function GET() {
@@ -9,7 +10,6 @@ export async function GET() {
   }
   const db = createAdminClient();
   const { data: rows } = await db.from("bookings").select("*, services(name)").order("starts_at");
-  const { data: usage } = await db.from("ai_usage").select("cost_cents");
-  const aiBill = (usage ?? []).reduce((sum, u) => sum + Number(u.cost_cents), 0);
+  const aiBill = await aiBillCents();
   return NextResponse.json({ rows: rows ?? [], aiBill });
 }
